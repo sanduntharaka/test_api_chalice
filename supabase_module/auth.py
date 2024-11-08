@@ -12,3 +12,8 @@ def supabase_login(data) -> dict:
 def supabase_logout() -> dict:
     response = supabase.auth.sign_out()
     return response
+
+
+def supabase_get_user(jwt) -> dict:
+    response = supabase.auth.get_user(jwt)
+    return response.user
