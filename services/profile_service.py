@@ -1,5 +1,4 @@
-from supabase_module.auth import supabase_get_user
-from supabase_module.db_query import insert_data, get_all_data, get_data_by_id, update_table_data
+from supabase_module.db_query import insert, get_all, get_by_column, update
 from services.auth_service import AuthService
 
 
@@ -16,15 +15,15 @@ class ProfileService:
             'dob': profile_data['dob'],
             'user_id': user.id
         }
-        return insert_data('user_profile', data)
+        return insert('user_profile', data)
 
     def get_profile(self, token):
         user = self.auth_service.get_user(token)
-        return get_data_by_id('user_profile', 'user_id', user.id)
+        return get_by_column('user_profile', {'user_id': user.id})
 
     def update_profile(self, token, profile_data):
         user = self.auth_service.get_user(token)
-        return update_table_data('user_profile', 'user_id', user.id, profile_data)
+        return update('user_profile', {'user_id': user.id}, profile_data)
 
     def get_all_profiles(self):
-        return get_all_data('user_profile')
+        return get_all('user_profile')

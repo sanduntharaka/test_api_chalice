@@ -16,13 +16,13 @@ def create_profile_routes(app):
         }
         return profile_service.create_profile(auth_token, profile_data)
 
-    @app.route('/profile', methods=['GET'])
+    @app.route('/profile/me', methods=['GET'])
     def get_user_profile():
         request = app.current_request
         auth_token = request.headers['authorization']
         return profile_service.get_profile(auth_token)
 
-    @app.route('/profile', methods=['PUT'])
+    @app.route('/profile/me', methods=['PUT'])
     def update_user_profile():
         request = app.current_request
         auth_token = request.headers['authorization']
