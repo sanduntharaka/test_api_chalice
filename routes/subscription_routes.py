@@ -16,11 +16,12 @@ def create_subscription_routes(app):
     def subscribe_to_loyalty_program():
         request = app.current_request
         auth_token = request.headers['authorization']
+        refresh_token = request.headers['refresh']
         request_data = {
             "program_id": request.json_body['program_id'],
             "date": request.json_body['datetime']
         }
-        return subscription_service.subscribe_to_subscription_plan(auth_token, request_data)
+        return subscription_service.subscribe_to_subscription_plan(auth_token, refresh_token, request_data)
 
     @app.route('/subscription-cards', methods=['GET'])
     def get_user_loyalty_cards():

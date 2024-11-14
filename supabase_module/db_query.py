@@ -3,6 +3,8 @@ from .supabase_config import supabase
 
 def insert(table_name, data):
     try:
+        # print('params:', params)
+        print('data:', data)
         response = (
             supabase.table(table_name)
             .insert(data)
@@ -60,10 +62,10 @@ def update(table_name, params, data):
         return {'error': str(e)}
 
 
-def filter_by_date_range(table_name, params, filter):
+def filter_by_range(table_name, params, filter):
     '''
     params is dict of column_name and value
-    filter is list of start_date and end_date
+    filter is list of start and end
     '''
     try:
         query = supabase.table(table_name).select('*')

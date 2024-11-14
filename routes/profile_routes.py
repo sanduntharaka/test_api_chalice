@@ -26,14 +26,14 @@ def create_profile_routes(app):
     def update_user_profile():
         request = app.current_request
         auth_token = request.headers['authorization']
-
+        refresh_token = request.headers['refresh']
         profile_data = {
             'first_name': request.json_body['first_name'],
             'last_name': request.json_body['last_name'],
             'phone': request.json_body['phone'],
             'dob': request.json_body['dob'],
         }
-        return profile_service.update_profile(auth_token, profile_data)
+        return profile_service.update_profile(auth_token, refresh_token, profile_data)
 
     @app.route('/profiles', methods=['GET'])
     def get_all_user_profiles():

@@ -1,18 +1,20 @@
 from supabase_module.db_query import insert, get_all, get_by_column, update
 from services.auth_service import AuthService
 from handlers.get_expire_date_time import get_expire_datetime
+from supabase_module.setup_session import setup_session
 
 
 class SubscriptionService:
     auth_service = AuthService()
 
     def get_all_subscription_plans(self):
-        return get_all('subsctiption_programs')
+        return get_all('subscription_programs')
 
     def get_subscription_plan_by_id(self, id):
-        return get_by_column('subsctiption_programs', {'id': id})
+        return get_by_column('subscription_programs', {'id': id})
 
-    def subscribe_to_subscription_plan(self, token, request_data):
+    def subscribe_to_subscription_plan(self, token, refresh, request_data):
+        setup_session(access_token=token, refresh_token=refresh)
         user = self.auth_service.get_user(token)
         data = {
             'issued_at': request_data['date'],

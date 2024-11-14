@@ -14,9 +14,11 @@ def create_payment_routes(app):
     def filter_payments_by_date_range():
         request = app.current_request
         auth_token = request.headers['authorization']
+        refresh_token = request.headers['refresh']
+
         start_date = app.current_request.query_params.get('start_date')
         end_date = app.current_request.query_params.get('end_date')
-        return payment_service.filter_payments_by_date_range(auth_token, start_date, end_date)
+        return payment_service.filter_payments_by_date_range(auth_token, refresh_token, start_date, end_date)
 
     @app.route('/payment', methods=['POST'])
     def add_payment():
