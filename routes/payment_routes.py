@@ -31,3 +31,10 @@ def create_payment_routes(app):
             "program_id": request.json_body['program_id']
         }
         return payment_service.add_payment(auth_token, request_data)
+
+    @app.route('/web-hook/card', methods=['GET'])
+    def test_payment():
+        request = app.current_request
+        auth_token = request.headers['authorization']
+
+        return payment_service.test_payment(auth_token)

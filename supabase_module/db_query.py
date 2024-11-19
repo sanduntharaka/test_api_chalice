@@ -1,4 +1,4 @@
-from .supabase_config import supabase
+from supabase_module.supabase_config import supabase
 
 
 def insert(table_name, data):
@@ -75,6 +75,19 @@ def filter_by_range(table_name, params, filter):
         query = query.lte(filter['column'],  filter['end'])
 
         response = query.execute()
+        return response.json()
+    except Exception as e:
+        print(e)
+        return {'error': str(e)}
+
+
+def call_function(function_name, params):
+    try:
+        response = (
+            supabase.rpc(function_name, params)
+            .execute()
+        )
+        print(response)
         return response.json()
     except Exception as e:
         print(e)

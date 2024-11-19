@@ -21,8 +21,16 @@ This document provides a step-by-step guide to setting up the project locally.
    **Command:**
    ```bash
    py -m venv <env_name>
+   <env_name>/Scripts/activate
 
-4. **Run chalice locally**
+4. **Install python libraries**
+   - 
+   
+   **Command:**
+   ```bash
+   pip install -r requirements.txt
+
+5. **Run chalice locally**
    -
     **Command**
     ```bash

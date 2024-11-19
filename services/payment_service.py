@@ -1,4 +1,4 @@
-from supabase_module.db_query import insert, get_by_column, filter_by_range
+from supabase_module.db_query import insert, get_by_column, filter_by_range, call_function
 from services.auth_service import AuthService
 from datetime import datetime, timedelta
 from handlers.handle_subscription_card import create_subscription_card
@@ -50,3 +50,7 @@ class PaymentService:
         start_date = datetime.strptime(start_date, '%Y-%m-%d')
         end_date = datetime.strptime(end_date, '%Y-%m-%d')
         return filter_by_range('user_payments', {'user_id': user.id}, {'column': "payment_date", "start": start_date, 'end': end_date})
+
+    def test_payment(self, token):
+        user = self.auth_service.get_user(token)
+        return call_function('calculate_total_subscription', {"user_id": user.id, "amount": 2})
