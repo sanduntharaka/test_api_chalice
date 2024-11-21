@@ -36,6 +36,38 @@ jobs:
           python -m pip install --upgrade pip
           pip install chalice awscli python-dotenv supabase
           pip install -r requirements.txt
+
+      - name: Update Chalice config environment variables
+        run: |
+          CONFIG_FILE=.chalice/config.json
+          
+          # Read existing config and update only environment variables
+          python - <<EOF
+          import json
+          import os
+          
+          # Read existing config
+          with open('$CONFIG_FILE', 'r') as f:
+              config = json.load(f)
+          
+          # Ensure the structure exists
+          if 'stages' not in config:
+              config['stages'] = {}
+          if 'prod' not in config['stages']:
+              config['stages']['prod'] = {}
+          if 'environment_variables' not in config['stages']['prod']:
+              config['stages']['prod']['environment_variables'] = {}
+          
+          # Update only environment variables
+          config['stages']['prod']['environment_variables'].update({
+              'SUPABASE_URL': '${{ secrets.SUPABASE_URL }}',
+              'SUPABASE_KEY': '${{ secrets.SUPABASE_KEY }}'
+          })
+          
+          # Write back the updated config
+          with open('$CONFIG_FILE', 'w') as f:
+              json.dump(config, f, indent=2)
+          EOF
           
       - name: Deploy with Chalice
         id: deploy
