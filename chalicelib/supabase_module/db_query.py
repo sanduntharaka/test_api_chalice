@@ -1,4 +1,4 @@
-from supabase_module.supabase_config import supabase
+from chalicelib.supabase_module.supabase_config import supabase
 
 
 def insert(table_name, data):

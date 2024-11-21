@@ -1,9 +1,9 @@
-from supabase_module.db_query import insert, get_by_column, filter_by_range, call_function
-from services.auth_service import AuthService
+from chalicelib.supabase_module.db_query import insert, get_by_column, filter_by_range, call_function
+from chalicelib.services.auth_service import AuthService
 from datetime import datetime, timedelta
-from handlers.handle_subscription_card import create_subscription_card
+from chalicelib.handlers.handle_subscription_card import create_subscription_card
 # from handlers.handle_top_up import add_top_to_subscription_card
-from supabase_module.setup_session import setup_session
+from chalicelib.supabase_module.setup_session import setup_session
 from chalice import Response
 
 
