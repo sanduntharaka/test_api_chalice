@@ -32,9 +32,9 @@ def create_payment_routes(app):
         }
         return payment_service.add_payment(auth_token, request_data)
 
-    @app.route('/web-hook/card', methods=['GET'])
+    @app.route('/web-hook/card', methods=['POST'])
     def test_payment():
         request = app.current_request
         auth_token = request.headers['authorization']
-
-        return payment_service.test_payment(auth_token)
+        order_amount = request.json_body['amount']
+        return payment_service.reduce_card_amount(auth_token, order_amount)

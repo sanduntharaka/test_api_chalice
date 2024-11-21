@@ -21,4 +21,7 @@ class AuthService:
             raise Exception(str(e))
 
     def get_user(self, auth_token):
-        return supabase_get_user(auth_token)
+        try:
+            return supabase_get_user(auth_token)
+        except Exception as e:
+            raise Exception(str(e))
