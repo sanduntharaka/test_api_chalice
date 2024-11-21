@@ -12,5 +12,4 @@ python-editor==1.0.4
 PyYAML==6.0.2
 readchar==4.2.1
 six==1.16.0
-urllib3==2.2.3
 wcwidth==0.2.13
