@@ -37,54 +37,35 @@ jobs:
           pip install chalice awscli python-dotenv supabase
           pip install -r requirements.txt
           
-      - name: Deploy with Chalice and Get URL
+      - name: Deploy with Chalice
         id: deploy
         run: |
           # Deploy the application
-          chalice deploy --stage prod
+          chalice deploy --stage prod || exit 1
           
-          # Parse the deployment output to get URLs
-          DEPLOYED_JSON=".chalice/deployed/prod.json"
+          # Extract the API Gateway URL from the deployment output
+          API_URL=$(cat .chalice/deployed/prod.json | jq -r '.resources[] | select(.resource_type=="rest_api") | .rest_api_url' || echo "API URL not found")
           
-          if [ -f "$DEPLOYED_JSON" ]; then
-            # Get the API Gateway URL
-            REST_API_ID=$(jq -r '.rest_api_id' "$DEPLOYED_JSON")
-            REGION=$(aws configure get region)
-            API_GATEWAY_URL="https://${REST_API_ID}.execute-api.${REGION}.amazonaws.com/api"
-            
-            # Get the Lambda function name
-            LAMBDA_FUNCTION=$(jq -r '.resources[] | select(.resource_type=="lambda_function") | .name' "$DEPLOYED_JSON")
-            
-            if [ ! -z "$LAMBDA_FUNCTION" ]; then
-              LAMBDA_URL=$(aws lambda list-function-url-configs --function-name "$LAMBDA_FUNCTION" --query 'FunctionUrlConfigs[0].FunctionUrl' --output text 2>/dev/null || echo "No Function URL configured")
-            else
-              LAMBDA_URL="Lambda function not found"
-            fi
-          else
-            API_GATEWAY_URL="Deployment file not found"
-            LAMBDA_URL="Deployment file not found"
-          fi
-          
-          # Set the URLs as output variables
-          echo "lambda_url=${LAMBDA_URL}" >> $GITHUB_OUTPUT
-          echo "api_url=${API_GATEWAY_URL}" >> $GITHUB_OUTPUT
+          # Set the URL as output variable
+          echo "api_url=${API_URL}" >> $GITHUB_OUTPUT
 
       - name: Send Slack notification
+        if: always()
         uses: 8398a7/action-slack@v3
         with:
-          status: custom
+          status: ${{ job.status }}
           fields: workflow,commit,repo
           custom_payload: |
             {
               "attachments": [
                 {
-                  "color": "#36a64f",
+                  "color": "${{ job.status == 'success' && '#36a64f' || '#dc3545' }}",
                   "blocks": [
                     {
                       "type": "section",
                       "text": {
                         "type": "mrkdwn",
-                        "text": ":rocket: *New Chalice deployment completed!*\n\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref_name }}\n*Deployed by:* ${{ github.actor }}\n\n*Lambda URL:* ${{ steps.deploy.outputs.lambda_url }}\n*API Gateway URL:* ${{ steps.deploy.outputs.api_url }}\n\n*Commit Message:* ${{ github.event.head_commit.message }}"
+                        "text": "${{ job.status == 'success' && ':white_check_mark:' || ':x:' }} *Chalice deployment ${{ job.status }}*\n\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref_name }}\n*Deployed by:* ${{ github.actor }}\n\n*API URL:* ${{ steps.deploy.outputs.api_url || 'Deployment failed' }}\n\n*Commit Message:* ${{ github.event.head_commit.message }}"
                       }
                     }
                   ]
