@@ -1,0 +1,82 @@
+name: Deploy Chalice Application
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  AWS_DEFAULT_REGION: eu-central-1
+  PYTHON_VERSION: '3.9'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_DEFAULT_REGION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install chalice awscli
+          pip install -r requirements.txt
+          
+      - name: Deploy with Chalice and Get URL
+        id: deploy
+        run: |
+          # Deploy the application
+          chalice deploy --stage prod
+          
+          # Get the Lambda function name from .chalice/deployed/prod.json
+          FUNCTION_NAME=$(jq -r '.resources[].name' .chalice/deployed/prod.json | grep -i "lambda" | head -1)
+          
+          # Get the Lambda URL using AWS CLI
+          LAMBDA_URL=$(aws lambda get-function-url-config --function-name $FUNCTION_NAME --query 'FunctionUrl' --output text || echo "URL not available")
+          
+          # Get the API Gateway URL from the deployed.json
+          API_URL=$(jq -r '.api_handler_arn' .chalice/deployed/prod.json | sed 's/.*:\([^:]*\)$/\1/')
+          REGION=$(aws configure get region)
+          API_GATEWAY_URL="https://${API_URL}.execute-api.${REGION}.amazonaws.com/api"
+          
+          # Set the URLs as output variables
+          echo "lambda_url=${LAMBDA_URL}" >> $GITHUB_OUTPUT
+          echo "api_url=${API_GATEWAY_URL}" >> $GITHUB_OUTPUT
+
+      - name: Send Slack notification
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          fields: workflow,commit,repo
+          custom_payload: |
+            {
+              "attachments": [
+                {
+                  "color": "#36a64f",
+                  "blocks": [
+                    {
+                      "type": "section",
+                      "text": {
+                        "type": "mrkdwn",
+                        "text": ":rocket: *New Chalice deployment completed!*\n\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref_name }}\n*Deployed by:* ${{ github.actor }}\n\n*Lambda URL:* ${{ steps.deploy.outputs.lambda_url }}\n*API Gateway URL:* ${{ steps.deploy.outputs.api_url }}\n\n*Commit Message:* ${{ github.event.head_commit.message }}"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
