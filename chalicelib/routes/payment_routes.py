@@ -1,4 +1,4 @@
-from services.payment_service import PaymentService
+from chalicelib.services.payment_service import PaymentService
 
 
 def create_payment_routes(app):

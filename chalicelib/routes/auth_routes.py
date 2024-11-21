@@ -1,4 +1,4 @@
-from services.auth_service import AuthService
+from chalicelib.services.auth_service import AuthService
 from chalice import Response
 
 

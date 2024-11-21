@@ -1,4 +1,4 @@
-from services.profile_service import ProfileService
+from chalicelib.services.profile_service import ProfileService
 
 
 def create_profile_routes(app):

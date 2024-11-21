@@ -1,6 +1,6 @@
-from supabase_module.db_query import insert, call_function
-from services.auth_service import AuthService
-from supabase_module.setup_session import setup_session
+from chalicelib.supabase_module.db_query import insert, call_function
+from chalicelib.services.auth_service import AuthService
+from chalicelib.supabase_module.setup_session import setup_session
 from chalice import Response
 
 

@@ -1,4 +1,4 @@
-from services.user_purchase_service import UserPurchaseService
+from chalicelib.services.user_purchase_service import UserPurchaseService
 
 
 def create_user_purchase_routes(app):
