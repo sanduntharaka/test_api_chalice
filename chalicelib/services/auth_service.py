@@ -1,4 +1,4 @@
-from supabase_module.auth import supabase_login, supabase_logout, supabase_get_user, supabase_signup
+from chalicelib.supabase_module.auth import supabase_login, supabase_logout, supabase_get_user, supabase_signup
 
 
 class AuthService:

@@ -1,4 +1,4 @@
-from services.subscription_service import SubscriptionService
+from chalicelib.services.subscription_service import SubscriptionService
 
 
 def create_subscription_routes(app):
