@@ -23,7 +23,7 @@ def supabase_login(data) -> dict:
 
 def supabase_logout(JWT) -> dict:
     try:
-        supabase.auth.sign_out(jwt=JWT)
+        supabase.auth.sign_out()
         return {'message': 'Logged out'}
     except Exception as e:
         return {'error': str(e), 'message': 'Error logging out'}

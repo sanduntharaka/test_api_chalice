@@ -29,7 +29,9 @@ def create_auth_routes(app):
     def logout():
         request = app.current_request
         auth_token = request.headers['authorization']
+        refresh_token = request.headers['refresh']
+
         try:
-            return Response(body=auth_service.logout(auth_token), status_code=200)
+            return Response(body=auth_service.logout(auth_token,refresh_token), status_code=200)
         except Exception as e:
             return Response(body={'error': str(e)}, status_code=400)

@@ -1,4 +1,5 @@
 from chalicelib.supabase_module.auth import supabase_login, supabase_logout, supabase_get_user, supabase_signup
+from chalicelib.supabase_module.setup_session import setup_session
 
 
 class AuthService:
@@ -14,8 +15,10 @@ class AuthService:
         except Exception as e:
             raise Exception(str(e))
 
-    def logout(self, auth_token):
+    def logout(self, auth_token,refresh):
         try:
+            setup_session(access_token=auth_token, refresh_token=refresh)
+
             return supabase_logout(auth_token)
         except Exception as e:
             raise Exception(str(e))
