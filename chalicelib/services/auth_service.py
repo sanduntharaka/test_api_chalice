@@ -4,7 +4,14 @@ from chalicelib.supabase_module.auth import supabase_login, supabase_logout, sup
 class AuthService:
     def sign_up(self, email, password):
         try:
-            return supabase_signup({'email': email, 'password': password})
+            #      "options": {
+            #     "email_redirect_to": "https://example.com/welcome",
+            # },
+            return supabase_signup(
+                {
+                    'email': email,
+                    'password': password
+                })
         except Exception as e:
             raise Exception(str(e))
 
