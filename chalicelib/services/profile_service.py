@@ -10,6 +10,7 @@ class ProfileService:
     def create_profile(self, token, profile_data):
         try:
             user = self.auth_service.get_user(token)
+            print(user)
         except Exception as e:
             return Response(body={'error': str(e)}, status_code=400)
         data = {
