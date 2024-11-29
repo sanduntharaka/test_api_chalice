@@ -32,6 +32,24 @@ def create_auth_routes(app):
         refresh_token = request.headers['refresh']
 
         try:
-            return Response(body=auth_service.logout(auth_token,refresh_token), status_code=200)
+            return Response(body=auth_service.logout(auth_token, refresh_token), status_code=200)
+        except Exception as e:
+            return Response(body={'error': str(e)}, status_code=400)
+
+    @app.route('/get-user', methods=['GET'])
+    def get_user():
+        request = app.current_request
+        auth_token = request.headers['authorization']
+        try:
+            user = auth_service.get_user(auth_token)
+            return Response(body={
+                'detail': 'user verified',
+                'data': {
+                    'user_id': user.id,
+                    'provider': user.app_metadata['provider'],
+                    'email': user.user_metadata['email']
+                }
+
+            }, status_code=200)
         except Exception as e:
             return Response(body={'error': str(e)}, status_code=400)
