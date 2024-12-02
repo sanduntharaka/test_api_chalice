@@ -17,22 +17,6 @@ class AuthService:
         except Exception as e:
             raise Exception(str(e))
 
-    # TODO remove this method
-    def sign_up_gm(self, email, password, options):
-        try:
-            #      "options": {
-            #     "email_redirect_to": "https://example.com/welcome",
-            # },
-            return supabase_signup(
-                {
-                    'email': email,
-                    'password': password,
-                    'options': options
-
-                })
-        except Exception as e:
-            raise Exception(str(e))
-
     def login(self, email, password):
         try:
             return supabase_login({'email': email, 'password': password})

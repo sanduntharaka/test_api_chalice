@@ -4,10 +4,7 @@ from chalicelib.supabase_module.supabase_config import supabase
 def supabase_signup(data) -> dict:
     try:
         response = supabase.auth.sign_up(data)
-        return {
-            'access_token': response.session.access_token if response.session.access_token else None,
-            'refresh_token': response.session.refresh_token if response.session.refresh_token else None,
-        }
+        return response.json()
     except Exception as e:
         print(e)
         return {'error': str(e), 'message': 'Error signing up'}
