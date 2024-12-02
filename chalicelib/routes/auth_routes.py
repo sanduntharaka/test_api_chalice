@@ -11,7 +11,12 @@ def create_auth_routes(app):
         email = request.json_body['email']
         password = request.json_body['password']
         try:
-            return Response(body=auth_service.sign_up(email, password), status_code=200)
+            user = auth_service.sign_up(email, password)
+            print(user)
+            return Response(body={
+                'detail': 'email verification link sent',
+                'data': user
+            }, status_code=200)
         except Exception as e:
             return Response(body={'error': str(e)}, status_code=400)
 
