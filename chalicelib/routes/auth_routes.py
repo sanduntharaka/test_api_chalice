@@ -5,7 +5,7 @@ from chalice import Response
 def create_auth_routes(app):
     auth_service = AuthService()
 
-    @app.route('/sign-up', methods=['POST'])
+    @app.route('/sign-up', methods=['POST'], cors=True)
     def sign_up():
         request = app.current_request
         email = request.json_body['email']
@@ -27,12 +27,12 @@ def create_auth_routes(app):
         except Exception as e:
             return Response(body={'error': str(e)}, status_code=400)
 
-    @app.route('/login', methods=['POST'])
+    @app.route('/login', methods=['POST'], cors=True)
     def login():
         request = app.current_request
         email = request.json_body['email']
         password = request.json_body['password']
-
+        print(request.headers)
         try:
             return Response(body=auth_service.login(email, password), status_code=200)
         except Exception as e:

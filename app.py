@@ -25,10 +25,10 @@ cors_config = CORSConfig(
 # # Import and register route handlers
 
 
-def auth_routes(app):
-    @app.route('/auth',  methods=['POST'], cors=True)
-    def auth():
-        return {'message': 'Auth route'}
+# def auth_routes(app):
+#     @app.route('/test',  methods=['POST'], cors=True)
+#     def test():
+#         return {'message': 'Auth route'}
 
 
 # def profile_routes(app):
