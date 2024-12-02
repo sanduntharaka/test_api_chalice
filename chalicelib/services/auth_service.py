@@ -11,7 +11,24 @@ class AuthService:
             return supabase_signup(
                 {
                     'email': email,
-                    'password': password
+                    'password': password,
+
+                })
+        except Exception as e:
+            raise Exception(str(e))
+
+    # TODO remove this method
+    def sign_up_gm(self, email, password, options):
+        try:
+            #      "options": {
+            #     "email_redirect_to": "https://example.com/welcome",
+            # },
+            return supabase_signup(
+                {
+                    'email': email,
+                    'password': password,
+                    'options': options
+
                 })
         except Exception as e:
             raise Exception(str(e))
@@ -22,7 +39,7 @@ class AuthService:
         except Exception as e:
             raise Exception(str(e))
 
-    def logout(self, auth_token,refresh):
+    def logout(self, auth_token, refresh):
         try:
             setup_session(access_token=auth_token, refresh_token=refresh)
 
