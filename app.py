@@ -7,14 +7,13 @@ from chalicelib.routes.user_purchase_routes import create_user_purchase_routes a
 app = Chalice(app_name='analisa')
 
 # Shared CORS configuration
-cors_config = CORSConfig(
-    allow_origin='http://localhost:8100',  # Replace with your front-end URL
-    # Include necessary headers
-    allow_headers=['Content-Type'],
-    max_age=600,  # Cache preflight response for 10 minutes
-    # Optional: Expose custom headers if needed
-    expose_headers=['X-Custom-Header'],
-)
+# cors_config = CORSConfig(
+#     allow_origin='http://localhost:8100',  # Replace with your front-end URL
+#     # Include necessary headers
+#     allow_headers=['Content-Type', 'Authorization'],
+#     max_age=600,  # Cache preflight response for 10 minutes
+#     expose_headers=['X-Custom-Header']
+# )
 
 # CORS_HEADERS = {
 #     'Access-Control-Allow-Origin': 'http://localhost:8100',  # Your frontend origin
