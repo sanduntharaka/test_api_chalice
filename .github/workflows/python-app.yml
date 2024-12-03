@@ -1,0 +1,108 @@
+name: Deploy Chalice Application
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  AWS_DEFAULT_REGION: eu-central-1
+  PYTHON_VERSION: '3.9'
+  SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+  SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_DEFAULT_REGION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install chalice awscli python-dotenv supabase
+          pip install -r requirements.txt
+
+      - name: Update Chalice config environment variables
+        run: |
+          CONFIG_FILE=.chalice/config.json
+          
+          # Read existing config and update only environment variables
+          python - <<EOF
+          import json
+          import os
+          
+          # Read existing config
+          with open('$CONFIG_FILE', 'r') as f:
+              config = json.load(f)
+          
+          # Ensure the structure exists
+          if 'stages' not in config:
+              config['stages'] = {}
+          if 'prod' not in config['stages']:
+              config['stages']['prod'] = {}
+          if 'environment_variables' not in config['stages']['prod']:
+              config['stages']['prod']['environment_variables'] = {}
+          
+          # Update only environment variables
+          config['stages']['prod']['environment_variables'].update({
+              'SUPABASE_URL': '${{ secrets.SUPABASE_URL }}',
+              'SUPABASE_KEY': '${{ secrets.SUPABASE_KEY }}'
+          })
+          
+          # Write back the updated config
+          with open('$CONFIG_FILE', 'w') as f:
+              json.dump(config, f, indent=2)
+          EOF
+          
+      - name: Deploy with Chalice
+        id: deploy
+        run: |
+          # Deploy the application
+          chalice deploy --stage prod || exit 1
+          
+          # Extract the API Gateway URL from the deployment output
+          API_URL=$(cat .chalice/deployed/prod.json | jq -r '.resources[] | select(.resource_type=="rest_api") | .rest_api_url' || echo "API URL not found")
+          
+          # Set the URL as output variable
+          echo "api_url=${API_URL}" >> $GITHUB_OUTPUT
+
+      - name: Send Slack notification
+        if: always()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: workflow,commit,repo
+          custom_payload: |
+            {
+              "attachments": [
+                {
+                  "color": "${{ job.status == 'success' && '#36a64f' || '#dc3545' }}",
+                  "blocks": [
+                    {
+                      "type": "section",
+                      "text": {
+                        "type": "mrkdwn",
+                        "text": "${{ job.status == 'success' && ':white_check_mark:' || ':x:' }} *Chalice deployment ${{ job.status }}*\n\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref_name }}\n*Deployed by:* ${{ github.actor }}\n\n*API URL:* ${{ steps.deploy.outputs.api_url || 'Deployment failed' }}\n\n*Commit Message:* ${{ github.event.head_commit.message }}"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
