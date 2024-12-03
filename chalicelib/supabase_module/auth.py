@@ -4,10 +4,9 @@ from chalicelib.supabase_module.supabase_config import supabase
 def supabase_signup(data) -> dict:
     try:
         response = supabase.auth.sign_up(data)
-        return response.json()
+        return response
     except Exception as e:
-        print(e)
-        return {'error': str(e), 'message': 'Error signing up'}
+        raise Exception(str(e))
 
 
 def supabase_login(data) -> dict:
@@ -29,3 +28,8 @@ def supabase_logout(JWT) -> dict:
 def supabase_get_user(jwt) -> dict:
     response = supabase.auth.get_user(jwt)
     return response.user
+
+
+def supabase_generate_session() -> dict:
+    response = supabase.auth.refresh_session()
+    return response.json()

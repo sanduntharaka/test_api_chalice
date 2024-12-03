@@ -1,5 +1,6 @@
 from chalicelib.services.auth_service import AuthService
 from chalice import Response
+import json
 
 
 def create_auth_routes(app):
@@ -11,11 +12,15 @@ def create_auth_routes(app):
         email = request.json_body['email']
         password = request.json_body['password']
         try:
-            user = auth_service.sign_up(email, password)
-            print(user)
+            response = auth_service.sign_up(email, password)
             return Response(body={
                 'detail': 'email verification link sent',
-                'data': user
+                'data': {
+                    'id': response.user.id,
+                    'provider': response.user.app_metadata['provider'],
+                    'email': response.user.user_metadata['email']
+
+                }
             }, status_code=200)
         except Exception as e:
             return Response(body={'error': str(e)}, status_code=400)
@@ -57,5 +62,17 @@ def create_auth_routes(app):
                 }
 
             }, status_code=200)
+        except Exception as e:
+            return Response(body={'error': str(e)}, status_code=400)
+
+    @app.route('/verify', methods=['GET'])
+    def get_user():
+        request = app.current_request
+        auth_token = request.headers['authorization']
+        refresh_token = request.headers['refresh']
+
+        try:
+            response = auth_service.verify_user(auth_token, refresh_token)
+            return Response(body=response, status_code=200)
         except Exception as e:
             return Response(body={'error': str(e)}, status_code=400)
