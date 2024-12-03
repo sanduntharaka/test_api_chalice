@@ -80,29 +80,3 @@ jobs:
           
           # Set the URL as output variable
           echo "api_url=${API_URL}" >> $GITHUB_OUTPUT
-
-      - name: Send Slack notification
-        if: always()
-        uses: 8398a7/action-slack@v3
-        with:
-          status: ${{ job.status }}
-          fields: workflow,commit,repo
-          custom_payload: |
-            {
-              "attachments": [
-                {
-                  "color": "${{ job.status == 'success' && '#36a64f' || '#dc3545' }}",
-                  "blocks": [
-                    {
-                      "type": "section",
-                      "text": {
-                        "type": "mrkdwn",
-                        "text": "${{ job.status == 'success' && ':white_check_mark:' || ':x:' }} *Chalice deployment ${{ job.status }}*\n\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref_name }}\n*Deployed by:* ${{ github.actor }}\n\n*API URL:* ${{ steps.deploy.outputs.api_url || 'Deployment failed' }}\n\n*Commit Message:* ${{ github.event.head_commit.message }}"
-                      }
-                    }
-                  ]
-                }
-              ]
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
