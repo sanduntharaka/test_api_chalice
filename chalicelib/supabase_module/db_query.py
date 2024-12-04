@@ -56,7 +56,7 @@ def update(table_name, params, data):
             query = query.eq(column_name, value)
 
         response = query.execute()
-        return response.json()
+        return response
     except Exception as e:
         print(e)
         return {'error': str(e)}
