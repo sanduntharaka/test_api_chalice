@@ -1,68 +1,64 @@
+from chalice import Blueprint, Response
 from chalicelib.services.auth_service import AuthService
-from chalice import Response
+from chalicelib.models.auth_models import SignUpRequest, LoginRequest
+from chalicelib.utils.response_helpers import create_response
+from chalicelib.utils.token_utils import extract_tokens
+
+auth_routes = Blueprint(__name__)
+auth_service = AuthService()
 
 
-def create_auth_routes(app):
-    auth_service = AuthService()
+@auth_routes.route('/sign-up', methods=['POST'])
+def sign_up():
+    request = auth_routes.current_request
+    body = SignUpRequest.parse_obj(request.json_body)
+    try:
+        response = auth_service.sign_up(body.email, body.password)
+        return create_response({
+            'detail': 'email verification link sent',
+            'data': response
+        })
+    except Exception as e:
+        return create_response({'error': str(e)}, status_code=400)
 
-    @app.route('/sign-up', methods=['POST'], cors=True)
-    def sign_up():
-        request = app.current_request
-        email = request.json_body['email']
-        password = request.json_body['password']
-        try:
-            return Response(body=auth_service.sign_up(email, password), status_code=200)
-        except Exception as e:
-            return Response(body={'error': str(e)}, status_code=400)
 
- # TODO remove this method
-    @app.route('/sign-up/gm', methods=['POST'])
-    def sign_up():
-        request = app.current_request
-        # email = request.json_body['email']
-        # password = request.json_body['password']
-        options = request.json_body['options']
-        try:
-            return Response(body=auth_service.sign_up_gm(options), status_code=200)
-        except Exception as e:
-            return Response(body={'error': str(e)}, status_code=400)
+@auth_routes.route('/login', methods=['POST'])
+def login():
+    request = auth_routes.current_request
+    body = LoginRequest.parse_obj(request.json_body)
+    try:
+        return create_response(auth_service.login(body.email, body.password))
+    except Exception as e:
+        return create_response({'error': str(e)}, status_code=400)
 
-    @app.route('/login', methods=['POST'], cors=True)
-    def login():
-        request = app.current_request
-        email = request.json_body['email']
-        password = request.json_body['password']
-        print(request.headers)
-        try:
-            return Response(body=auth_service.login(email, password), status_code=200)
-        except Exception as e:
-            return Response(body={'error': str(e)}, status_code=400)
 
-    @app.route('/logout', methods=['POST'])
-    def logout():
-        request = app.current_request
-        auth_token = request.headers['authorization']
-        refresh_token = request.headers['refresh']
+@auth_routes.route('/logout', methods=['POST'])
+def logout():
+    tokens = extract_tokens(auth_routes.current_request.headers)
+    try:
+        return create_response(auth_service.logout(tokens))
+    except Exception as e:
+        return create_response({'error': str(e)}, status_code=400)
 
-        try:
-            return Response(body=auth_service.logout(auth_token, refresh_token), status_code=200)
-        except Exception as e:
-            return Response(body={'error': str(e)}, status_code=400)
 
-    @app.route('/get-user', methods=['GET'])
-    def get_user():
-        request = app.current_request
-        auth_token = request.headers['authorization']
-        try:
-            user = auth_service.get_user(auth_token)
-            return Response(body={
-                'detail': 'user verified',
-                'data': {
-                    'user_id': user.id,
-                    'provider': user.app_metadata['provider'],
-                    'email': user.user_metadata['email']
-                }
+@auth_routes.route('/get-user', methods=['GET'])
+def get_user():
+    tokens = extract_tokens(auth_routes.current_request.headers)
+    try:
+        user = auth_service.get_user(tokens['auth_token'])
+        return create_response({
+            'detail': 'user verified',
+            'data': user
+        })
+    except Exception as e:
+        return create_response({'error': str(e)}, status_code=400)
 
-            }, status_code=200)
-        except Exception as e:
-            return Response(body={'error': str(e)}, status_code=400)
+
+@auth_routes.route('/verify', methods=['GET'])
+def verify_user():
+    tokens = extract_tokens(auth_routes.current_request.headers)
+    try:
+        response = auth_service.verify_user(tokens)
+        return create_response(response)
+    except Exception as e:
+        return create_response({'error': str(e)}, status_code=400)
