@@ -8,6 +8,14 @@ class ProfileRequestData(BaseModel):
     dob: str
 
 
+class ProfileServiceModel(BaseModel):
+    first_name: str
+    last_name: str
+    email: str
+    phone: str
+    dob: str
+    user_id: str
+
 # class Profile(BaseModel):
 #     id: str
 #     first_name: str

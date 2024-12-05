@@ -89,5 +89,4 @@ def call_function(function_name, params):
         )
         return response
     except Exception as e:
-        print(e)
-        return {'error': str(e)}
+        raise Exception(str(e))

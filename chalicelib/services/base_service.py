@@ -12,4 +12,5 @@ class BaseService:
             user = self.auth_service.get_user(token)
             return user
         except Exception as e:
+            print(e)
             raise Exception(f"Error fetching user details: {str(e)}")

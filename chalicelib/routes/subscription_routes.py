@@ -27,6 +27,7 @@ def create_subscription_routes(app):
     def get_user_loyalty_cards():
         request = app.current_request
         auth_token = request.headers['authorization']
+        print(auth_token)
         return subscription_service.get_all_user_subscription_cards(auth_token)
 
     @app.route('/subscription-cards/{id}', methods=['GET'])

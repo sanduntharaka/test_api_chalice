@@ -1,15 +1,11 @@
 from chalicelib.supabase_module.supabase_config import supabase
 
 
-def supabase_signup(data) -> dict:
-    try:
-        response = supabase.auth.sign_up(data)
-        return response
-    except Exception as e:
-        raise Exception(str(e))
+def supabase_signup(data: dict) -> object:
+    return supabase.auth.sign_up(data)
 
 
-def supabase_login(data) -> dict:
+def supabase_login(data: dict) -> dict:
     response = supabase.auth.sign_in_with_password(data)
     return {
         'access_token': response.session.access_token,
@@ -17,19 +13,14 @@ def supabase_login(data) -> dict:
     }
 
 
-def supabase_logout(JWT) -> dict:
-    try:
-        supabase.auth.sign_out()
-        return {'message': 'Logged out'}
-    except Exception as e:
-        return {'error': str(e), 'message': 'Error logging out'}
+def supabase_logout(auth_token: str) -> dict:
+    supabase.auth.sign_out()
+    return {'message': 'Logged out'}
 
 
-def supabase_get_user(jwt) -> dict:
-    response = supabase.auth.get_user(jwt)
-    return response.user
+def supabase_get_user(auth_token: str) -> dict:
+    return supabase.auth.get_user(auth_token).user
 
 
 def supabase_generate_session() -> dict:
-    response = supabase.auth.refresh_session()
-    return response.json()
+    return supabase.auth.refresh_session()

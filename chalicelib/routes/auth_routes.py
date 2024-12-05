@@ -1,78 +1,101 @@
+from chalice import Blueprint
+from chalicelib.supabase_module.supabase_config import supabase
+from chalicelib.models.auth_models import SignUpRequest, LoginRequest, AuthTokens, GetUserResponse, UserMetadata
+from typing import Dict
 from chalicelib.services.auth_service import AuthService
-from chalice import Response
-import json
+from chalicelib.utils.response_helpers import create_response
+
+# Define Blueprint for auth routes
+auth_route = Blueprint(__name__)
+auth_service = AuthService()
 
 
-def create_auth_routes(app):
-    auth_service = AuthService()
+@auth_route.route('/sign-up', methods=['POST'])
+def supabase_signup():
+    request = auth_route.current_request
+    data = SignUpRequest.parse_obj(request.json_body)
+    try:
+        response = supabase.auth.sign_up(data.dict())
+        return create_response({
+            'message': 'Sign-up successful',
+            'user': {
+                'id': response.user.id,
+                'email': response.user.user_metadata['email'],
+                'provider': response.user.app_metadata['provider'],
+            }
+        }, status_code=201)
+    except Exception as e:
+        return create_response({'error': str(e)}, status_code=400)
 
-    @app.route('/sign-up', methods=['POST'])
-    def sign_up():
-        request = app.current_request
-        email = request.json_body['email']
-        password = request.json_body['password']
-        try:
-            response = auth_service.sign_up(email, password)
-            return Response(body={
-                'detail': 'email verification link sent',
-                'data': {
-                    'id': response.user.id,
-                    'provider': response.user.app_metadata['provider'],
-                    'email': response.user.user_metadata['email']
 
-                }
-            }, status_code=200)
-        except Exception as e:
-            return Response(body={'error': str(e)}, status_code=400)
+@auth_route.route('/login', methods=['POST'])
+def supabase_login():
+    request = auth_route.current_request
+    data = LoginRequest.parse_obj(request.json_body)
 
-    @app.route('/login', methods=['POST'])
-    def login():
-        request = app.current_request
-        email = request.json_body['email']
-        password = request.json_body['password']
+    try:
+        response = supabase.auth.sign_in_with_password(data.dict())
+        return create_response({
+            'access_token': response.session.access_token,
+            'refresh_token': response.session.refresh_token
+        }, status_code=200)
 
-        try:
-            return Response(body=auth_service.login(email, password), status_code=200)
-        except Exception as e:
-            return Response(body={'error': str(e)}, status_code=400)
+    except Exception as e:
+        return create_response({'error': str(e), 'message': 'Error during login'}, status_code=400)
 
-    @app.route('/logout', methods=['POST'])
-    def logout():
-        request = app.current_request
-        auth_token = request.headers['authorization']
-        refresh_token = request.headers['refresh']
 
-        try:
-            return Response(body=auth_service.logout(auth_token, refresh_token), status_code=200)
-        except Exception as e:
-            return Response(body={'error': str(e)}, status_code=400)
+@auth_route.route('/logout', methods=['POST'])
+def supabase_logout():
+    request = auth_route.current_request
+    auth_token = request.headers.get('authorization', None)
 
-    @app.route('/get-user', methods=['GET'])
-    def get_user():
-        request = app.current_request
-        auth_token = request.headers['authorization']
-        try:
-            user = auth_service.get_user(auth_token)
-            return Response(body={
-                'detail': 'user verified',
-                'data': {
-                    'user_id': user.id,
-                    'provider': user.app_metadata['provider'],
-                    'email': user.user_metadata['email']
-                }
+    if not auth_token:
+        return create_response({'error': 'Authorization token missing', 'message': 'Error logging out'}, status_code=400)
 
-            }, status_code=200)
-        except Exception as e:
-            return Response(body={'error': str(e)}, status_code=400)
+    try:
+        supabase.auth.sign_out()
+        return create_response({'message': 'Logged out successfully'}, status_code=200)
+    except Exception as e:
+        return create_response({'error': str(e), 'message': 'Error logging out'}, status_code=400)
 
-    @app.route('/verify', methods=['GET'])
-    def get_user():
-        request = app.current_request
-        auth_token = request.headers['authorization']
-        refresh_token = request.headers['refresh']
 
-        try:
-            response = auth_service.verify_user(auth_token, refresh_token)
-            return Response(body=response, status_code=200)
-        except Exception as e:
-            return Response(body={'error': str(e)}, status_code=400)
+@auth_route.route('/get-user', methods=['GET'])
+def supabase_get_user():
+    request = auth_route.current_request
+    auth_token = request.headers.get('authorization', None)
+
+    if not auth_token:
+        return create_response({'error': 'Authorization token missing', 'message': 'Error fetching user'}, status_code=400)
+
+    try:
+        response = supabase.auth.get_user(auth_token)
+        user = response.user
+        return create_response({
+            'detail': 'User verified',
+            'data': UserMetadata(
+                user_id=user.id,
+                provider=user.app_metadata['provider'],
+                email=user.user_metadata['email']
+            ).dict()
+        }, status_code=200)
+    except Exception as e:
+        return create_response({'error': str(e), 'message': 'Error fetching user'}, status_code=400)
+
+
+@auth_route.route('/verify', methods=['GET'])
+def supabase_verify_user():
+    request = auth_route.current_request
+    auth_token = request.headers.get('authorization', None)
+    refresh_token = request.headers.get('refresh', None)
+
+    if not auth_token or not refresh_token:
+        return create_response({'error': 'Authorization or refresh token missing', 'message': 'Error verifying user'}, status_code=400)
+
+    try:
+        response = supabase.auth.refresh_session(auth_token)
+        return create_response({
+            'message': 'User verified',
+            'session': response.json()
+        }, status_code=200)
+    except Exception as e:
+        return create_response({'error': str(e), 'message': 'Error verifying user'}, status_code=400)
