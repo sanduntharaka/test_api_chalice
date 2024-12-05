@@ -56,7 +56,7 @@ def update(table_name, params, data):
             query = query.eq(column_name, value)
 
         response = query.execute()
-        return response.json()
+        return response
     except Exception as e:
         print(e)
         return {'error': str(e)}
@@ -87,8 +87,7 @@ def call_function(function_name, params):
             supabase.rpc(function_name, params)
             .execute()
         )
-        print(response)
-        return response.json()
+        return response
     except Exception as e:
         print(e)
         return {'error': str(e)}
