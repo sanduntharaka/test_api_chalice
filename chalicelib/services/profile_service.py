@@ -33,11 +33,14 @@ class ProfileService:
     #     }
     #     return data
 
-    def create_profile_using_function(self, token, profile_data):
+    def get_user_details(self, token):
         try:
             user = self.auth_service.get_user(token)
         except Exception as e:
-            return Response(body={'error': str(e)}, status_code=400)
+            raise Exception(str(e))
+
+    def create_profile_using_function(self, token, profile_data):
+        user = self.get_user_details(token)
         data = {
             'first_name': profile_data['first_name'],
             'last_name': profile_data['last_name'],
@@ -69,10 +72,7 @@ class ProfileService:
     #     return data
 
     def get_profile_from_func(self, token):
-        try:
-            user = self.auth_service.get_user(token)
-        except Exception as e:
-            return Response(body={'error': str(e)}, status_code=400)
+        user = self.get_user_details(token)
         data = {
             'user_id': user.id
         }
@@ -84,10 +84,7 @@ class ProfileService:
     def update_profile(self, token, refresh, profile_data):
         setup_session(access_token=token, refresh_token=refresh)
 
-        try:
-            user = self.auth_service.get_user(token)
-        except Exception as e:
-            return Response(body={'error': str(e)}, status_code=400)
+        user = self.auth_service.get_user(token)
 
         profile_data['user_id'] = user.id
         return update('user_profile', {'user_id': user.id}, profile_data)

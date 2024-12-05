@@ -1,4 +1,5 @@
 from pydantic import BaseModel, EmailStr
+from typing import Union
 
 
 class SignUpRequest(BaseModel):
@@ -13,7 +14,7 @@ class LoginRequest(BaseModel):
 
 class AuthTokens(BaseModel):
     access_token: str
-    refresh_token: str | None
+    refresh_token: Union[str, None]
 
 
 class UserMetadata(BaseModel):
