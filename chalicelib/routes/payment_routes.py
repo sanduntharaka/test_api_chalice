@@ -1,40 +1,46 @@
 from chalicelib.services.payment_service import PaymentService
+from chalicelib.utils.token_utils import extract_tokens
+
+from chalice import Blueprint
+
+payment_routes = Blueprint(__name__)
+payment_service = PaymentService()
 
 
-def create_payment_routes(app):
-    payment_service = PaymentService()
+@payment_routes.route('/payment', methods=['GET'])
+def get_all_user_payments():
+    request = payment_routes.current_request
+    tokens = extract_tokens(request.headers)
+    return payment_service.get_all_payments(tokens.access_token)
 
-    @app.route('/payment', methods=['GET'])
-    def get_all_user_payments():
-        request = app.current_request
-        auth_token = request.headers['authorization']
-        return payment_service.get_all_payments(auth_token)
 
-    @app.route('/payment/filter', methods=['GET'])
-    def filter_payments_by_date_range():
-        request = app.current_request
-        auth_token = request.headers['authorization']
-        refresh_token = request.headers['refresh']
+@payment_routes.route('/payment/filter', methods=['GET'])
+def filter_payments_by_date_range():
+    request = payment_routes.current_request
+    tokens = extract_tokens(request.headers)
 
-        start_date = app.current_request.query_params.get('start_date')
-        end_date = app.current_request.query_params.get('end_date')
-        return payment_service.filter_payments_by_date_range(auth_token, refresh_token, start_date, end_date)
+    start_date = payment_routes.current_request.query_params.get('start_date')
+    end_date = payment_routes.current_request.query_params.get('end_date')
+    return payment_service.filter_payments_by_date_range(tokens.access_token, tokens.refresh_token, start_date, end_date)
 
-    @app.route('/payment', methods=['POST'])
-    def add_payment():
-        request = app.current_request
-        auth_token = request.headers['authorization']
-        request_data = {
-            "amount": request.json_body['amount'],
-            "date_time": request.json_body['date_time'],
-            "type": request.json_body['type'],
-            "program_id": request.json_body['program_id']
-        }
-        return payment_service.add_payment(auth_token, request_data)
 
-    @app.route('/web-hook/card', methods=['POST'])
-    def test_payment():
-        request = app.current_request
-        auth_token = request.headers['authorization']
-        order_amount = request.json_body['amount']
-        return payment_service.reduce_card_amount(auth_token, order_amount)
+@payment_routes.route('/payment', methods=['POST'])
+def add_payment():
+    request = payment_routes.current_request
+    tokens = extract_tokens(request.headers)
+
+    request_data = {
+        "amount": request.json_body['amount'],
+        "date_time": request.json_body['date_time'],
+        "type": request.json_body['type'],
+        "program_id": request.json_body['program_id']
+    }
+    return payment_service.add_payment(tokens.access_token, request_data)
+
+
+@payment_routes.route('/web-hook/card', methods=['POST'])
+def test_payment():
+    request = payment_routes.current_request
+    tokens = extract_tokens(request.headers)
+    order_amount = request.json_body['amount']
+    return payment_service.reduce_card_amount(tokens.access_token, order_amount)

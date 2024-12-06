@@ -7,7 +7,6 @@ from typing import Dict
 class AuthService:
     def sign_up(self, data: SignUpRequest) -> Dict:
         try:
-            # Use Pydantic model's .dict() method to pass data
             response = supabase_signup(data.dict())
             return response
         except Exception as e:
@@ -15,7 +14,6 @@ class AuthService:
 
     def login(self, data: LoginRequest) -> AuthTokens:
         try:
-            # Use Pydantic model's .dict() method to pass data
             response = supabase_login(data.dict())
             return AuthTokens(
                 access_token=response['access_token'],
@@ -32,7 +30,6 @@ class AuthService:
             raise Exception(str(e))
 
     def get_user(self, auth_token: str) -> Dict:
-        print('calling')
 
         try:
             response = supabase_get_user(auth_token)
