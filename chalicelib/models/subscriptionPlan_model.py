@@ -10,3 +10,8 @@ class SubscriptionPlan(BaseModel):
     active: bool
     description: str
     amount: float
+
+
+class CreateSubscriptionCard(BaseModel):
+    program_id: int
+    date: datetime

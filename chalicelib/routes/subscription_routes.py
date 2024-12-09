@@ -1,6 +1,7 @@
 from chalicelib.services.subscription_service import SubscriptionService
 from chalicelib.utils.token_utils import extract_tokens
 from chalicelib.utils.response_helpers import create_response
+from chalicelib.models.subscriptionPlan_model import CreateSubscriptionCard
 
 from chalice import Blueprint
 
@@ -31,14 +32,14 @@ def subscribe_to_subscription_plan():
     request = subscription_routes.current_request  # Correcting the reference
     # Assuming this is for extracting tokens
     tokens = extract_tokens(request.headers)
-    request_data = {
+    request_data = CreateSubscriptionCard.model_validate({
         "program_id": request.json_body['program_id'],
         "date": request.json_body['datetime']
-    }
+    }).model_dump()
     try:
         response = subscription_service.subscribe_to_subscription_plan(
             tokens.access_token, tokens.refresh_token, request_data)
-        return create_response(response, status_code=200)
+        return create_response(response, status_code=201)
     except Exception as e:
         return create_response({'error': str(e)}, status_code=400)
 
