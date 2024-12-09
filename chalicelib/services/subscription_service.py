@@ -49,4 +49,7 @@ class SubscriptionService:
         except Exception as e:
             return Response(body={'error': str(e)}, status_code=400)
 
-        return update('subscription_cards', {'id': id, 'user_id': user.id}, request_data)
+        res = update('subscription_cards', {
+                     'id': id, 'user_id': user.id}, request_data)
+        print(res)
+        return res.json()

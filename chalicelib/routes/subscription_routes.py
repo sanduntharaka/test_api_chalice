@@ -41,6 +41,7 @@ def create_subscription_routes(app):
         request = app.current_request
         auth_token = request.headers['authorization']
         request_data = {
-            "status": request.json_body['status']
+            "status": request.json_body['status'],
+            # "program_id": request.json_body['program_id']
         }
         return subscription_service.update_user_subscription_card(auth_token, id, request_data)
