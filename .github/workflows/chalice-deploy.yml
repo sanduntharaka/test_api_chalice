@@ -39,10 +39,17 @@ jobs:
           else
             echo "No requirements.txt file found."
           fi
-    
-      - name: Clean Chalice Cache
-        run: rm -rf .chalice || echo ".chalice directory does not exist, skipping clean-up."
-
+      
+      - name: Clean Chalice Deployment Cache
+        run: |
+          DEPLOYMENT_DIR=".chalice/deployed"
+          if [ -d "$DEPLOYMENT_DIR" ]; then
+            rm -rf $DEPLOYMENT_DIR
+            echo "Cleaned Chalice deployment cache."
+          else
+            echo "No deployment cache to clean."
+          fi
+          
       - name: Install jq
         run: sudo apt-get install -y jq
         
