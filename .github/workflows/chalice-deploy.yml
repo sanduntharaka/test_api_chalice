@@ -9,7 +9,7 @@ on:
 
 env:
   AWS_DEFAULT_REGION: eu-central-1
-  PYTHON_VERSION: '3.9'
+  PYTHON_VERSION: '3.10'
   SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
   SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
 
@@ -30,7 +30,29 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_DEFAULT_REGION }}
-
+          
+      - name: Validate Encoding of requirements.txt
+        run: |
+          if [ -f requirements.txt ]; then
+            file requirements.txt
+            iconv -f $(file -b --mime-encoding requirements.txt) -t UTF-8 requirements.txt -o requirements.txt || echo "requirements.txt is already UTF-8"
+          else
+            echo "No requirements.txt file found."
+          fi
+      
+      - name: Clean Chalice Deployment Cache
+        run: |
+          DEPLOYMENT_DIR=".chalice/deployed"
+          if [ -d "$DEPLOYMENT_DIR" ]; then
+            rm -rf $DEPLOYMENT_DIR
+            echo "Cleaned Chalice deployment cache."
+          else
+            echo "No deployment cache to clean."
+          fi
+          
+      - name: Install jq
+        run: sudo apt-get install -y jq
+        
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -73,7 +95,7 @@ jobs:
         id: deploy
         run: |
           # Deploy the application
-          chalice deploy --stage prod || exit 1
+          chalice deploy || exit 1
           
           # Extract the API Gateway URL from the deployment output
           API_URL=$(cat .chalice/deployed/prod.json | jq -r '.resources[] | select(.resource_type=="rest_api") | .rest_api_url' || echo "API URL not found")
