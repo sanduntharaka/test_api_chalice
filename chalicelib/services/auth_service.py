@@ -31,11 +31,8 @@ class AuthService:
 
     def get_user(self, auth_token: str) -> Dict:
 
-        try:
-            response = supabase_get_user(auth_token)
-            return response
-        except Exception as e:
-            raise Exception(str(e))
+        response = supabase_get_user(auth_token)
+        return response
 
     def verify_user(self, token: str, refresh_token: str) -> Dict:
         try:

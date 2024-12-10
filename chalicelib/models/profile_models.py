@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Union
 
 
 class ProfileRequestData(BaseModel):
@@ -15,6 +16,14 @@ class ProfileServiceModel(BaseModel):
     phone: str
     dob: str
     user_id: str
+
+
+class ProfileUpdateRequestData(BaseModel):
+    first_name: Union[str, None]
+    last_name: Union[str, None]
+    phone: Union[str, None]
+    dob: Union[str, None]
+
 
 # class Profile(BaseModel):
 #     id: str

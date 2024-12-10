@@ -36,14 +36,14 @@ class ProfileService(BaseService):
     #     return data
 
     def create_profile_using_function(self, token, profile_data):
-        user = self.auth_service.get_user(token)
+        user = self.get_user_details(token)
 
         data = ProfileServiceModel(
-            first_name=profile_data['first_name'],
-            last_name=profile_data['last_name'],
+            first_name=profile_data.first_name,
+            last_name=profile_data.last_name,
             email=user.email,
-            phone=profile_data['phone'],
-            dob=profile_data['dob'],
+            phone=profile_data.phone,
+            dob=profile_data.dob,
             user_id=user.id
         ).model_dump()
 

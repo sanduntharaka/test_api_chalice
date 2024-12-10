@@ -1,5 +1,7 @@
 from chalicelib.services.auth_service import AuthService
-from chalice import Response
+from chalice import (
+    UnauthorizedError,
+)
 
 
 class BaseService:
@@ -7,10 +9,5 @@ class BaseService:
         self.auth_service = AuthService()
 
     def get_user_details(self, token):
-
-        try:
-            user = self.auth_service.get_user(token)
-            return user
-        except Exception as e:
-            print(e)
-            raise Exception(f"Error fetching user details: {str(e)}")
+        user = self.auth_service.get_user(token)
+        return user

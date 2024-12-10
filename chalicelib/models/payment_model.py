@@ -7,3 +7,7 @@ class AddPaymentModel(BaseModel):
     date_time: str
     type: str
     program_id: Union[str, None]
+
+
+class CardReducePaymentWebHook(BaseModel):
+    amount: float
