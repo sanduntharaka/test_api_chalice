@@ -43,9 +43,6 @@ jobs:
       - name: Update Chalice config environment variables
         run: |
           CONFIG_FILE=.chalice/config.json
-          python - <<EOF
-          import json
-          import os
           
           # Read existing config and update only environment variables
           python - <<EOF
