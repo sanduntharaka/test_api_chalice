@@ -6,37 +6,21 @@ from typing import Dict
 
 class AuthService:
     def sign_up(self, data: SignUpRequest) -> Dict:
-        try:
-            response = supabase_signup(data.dict())
-            return response
-        except Exception as e:
-            raise Exception(str(e))
+        response = supabase_signup(data.model_dump())
+        return response
 
     def login(self, data: LoginRequest) -> AuthTokens:
-        try:
-            response = supabase_login(data.dict())
-            return AuthTokens(
-                access_token=response['access_token'],
-                refresh_token=response['refresh_token']
-            )
-        except Exception as e:
-            raise Exception(str(e))
+        response = supabase_login(data.model_dump())
+        return response
 
     def logout(self, auth_token: str, refresh_token: str) -> Dict:
-        try:
-            setup_session(access_token=auth_token, refresh_token=refresh_token)
-            return supabase_logout(auth_token)
-        except Exception as e:
-            raise Exception(str(e))
+        setup_session(access_token=auth_token, refresh_token=refresh_token)
+        return supabase_logout()
 
     def get_user(self, auth_token: str) -> Dict:
-
         response = supabase_get_user(auth_token)
         return response
 
     def verify_user(self, token: str, refresh_token: str) -> Dict:
-        try:
-            setup_session(access_token=token, refresh_token=refresh_token)
-            return supabase_generate_session()
-        except Exception as e:
-            raise Exception(str(e))
+        setup_session(access_token=token, refresh_token=refresh_token)
+        return supabase_generate_session()

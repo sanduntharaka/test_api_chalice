@@ -14,4 +14,8 @@ class SubscriptionPlan(BaseModel):
 
 class CreateSubscriptionCard(BaseModel):
     program_id: int
-    date: datetime
+    datetime: datetime
+
+
+class UpdateSubscriptionCard(BaseModel):
+    status: str

@@ -1,12 +1,8 @@
-from chalicelib.supabase_module.db_query import insert, get_all, get_by_column, update, call_function
-from chalicelib.services.auth_service import AuthService
+from chalicelib.supabase_module.db_query import get_all,  update, call_function
 from chalicelib.supabase_module.setup_session import setup_session
 from chalicelib.services.base_service import BaseService
 from chalicelib.models.profile_models import ProfileServiceModel
 from chalicelib.models.supabase_data_model import UserModelForSupabase
-from chalice import Response
-
-import json
 
 
 class ProfileService(BaseService):

@@ -13,7 +13,7 @@ def supabase_login(data: dict) -> dict:
     }
 
 
-def supabase_logout(auth_token: str) -> dict:
+def supabase_logout() -> dict:
     supabase.auth.sign_out()
     return {'message': 'Logged out'}
 
