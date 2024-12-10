@@ -31,6 +31,18 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_DEFAULT_REGION }}
           
+      - name: Validate Encoding of requirements.txt
+        run: |
+          if [ -f requirements.txt ]; then
+            file requirements.txt
+            iconv -f $(file -b --mime-encoding requirements.txt) -t UTF-8 requirements.txt -o requirements.txt || echo "requirements.txt is already UTF-8"
+          else
+            echo "No requirements.txt file found."
+          fi
+    
+      - name: Clean Chalice Cache
+        run: rm -rf .chalice || echo ".chalice directory does not exist, skipping clean-up."
+
       - name: Install jq
         run: sudo apt-get install -y jq
         
