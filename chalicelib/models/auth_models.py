@@ -1,4 +1,5 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
+from typing import Union
 
 
 class SignUpRequest(BaseModel):
@@ -12,5 +13,16 @@ class LoginRequest(BaseModel):
 
 
 class AuthTokens(BaseModel):
-    auth_token: str
-    refresh_token: str
+    access_token: str
+    refresh_token: Union[str, None]
+
+
+class UserMetadata(BaseModel):
+    user_id: str
+    provider: str
+    email: EmailStr
+
+
+class GetUserResponse(BaseModel):
+    detail: str
+    data: UserMetadata

@@ -1,64 +1,78 @@
-from chalice import Blueprint, Response
-from chalicelib.services.auth_service import AuthService
-from chalicelib.models.auth_models import SignUpRequest, LoginRequest
-from chalicelib.utils.response_helpers import create_response
+from chalice import Blueprint
+from chalicelib.supabase_module.supabase_config import supabase
+from chalicelib.models.auth_models import SignUpRequest, LoginRequest, AuthTokens, GetUserResponse, UserMetadata
+from chalicelib.decorators.handle_exceptions import handle_exceptions
 from chalicelib.utils.token_utils import extract_tokens
-
-auth_routes = Blueprint(__name__)
+from chalicelib.services.auth_service import AuthService
+from chalicelib.utils.response_helpers import create_response
+from chalicelib.config import cors_config
+# Define Blueprint for auth routes
+auth_route = Blueprint(__name__)
 auth_service = AuthService()
 
 
-@auth_routes.route('/sign-up', methods=['POST'])
-def sign_up():
-    request = auth_routes.current_request
-    body = SignUpRequest.parse_obj(request.json_body)
-    try:
-        response = auth_service.sign_up(body.email, body.password)
-        return create_response({
-            'detail': 'email verification link sent',
-            'data': response
-        })
-    except Exception as e:
-        return create_response({'error': str(e)}, status_code=400)
+@auth_route.route('/sign-up', methods=['POST'], cors=cors_config)
+@handle_exceptions
+def supabase_signup():
+    request = auth_route.current_request
+    data = SignUpRequest.parse_obj(request.json_body)
+    response = auth_service.sign_up(data)
+    return create_response({
+        'message': 'Sign-up successful',
+        'user': {
+            'id': response.user.id,
+            'email': response.user.user_metadata['email'],
+            'provider': response.user.app_metadata['provider'],
+        }
+    }, status_code=201)
 
 
-@auth_routes.route('/login', methods=['POST'])
-def login():
-    request = auth_routes.current_request
-    body = LoginRequest.parse_obj(request.json_body)
-    try:
-        return create_response(auth_service.login(body.email, body.password))
-    except Exception as e:
-        return create_response({'error': str(e)}, status_code=400)
+@auth_route.route('/login', methods=['POST'], cors=cors_config)
+@handle_exceptions
+def supabase_login():
+    request = auth_route.current_request
+    data = LoginRequest.parse_obj(request.json_body)
+
+    response = auth_service.login(data)
+    return create_response(response, status_code=200)
 
 
-@auth_routes.route('/logout', methods=['POST'])
-def logout():
-    tokens = extract_tokens(auth_routes.current_request.headers)
-    try:
-        return create_response(auth_service.logout(tokens))
-    except Exception as e:
-        return create_response({'error': str(e)}, status_code=400)
+@auth_route.route('/logout', methods=['POST'], cors=cors_config)
+@handle_exceptions
+def supabase_logout():
+    request = auth_route.current_request
+    tokens = extract_tokens(request.headers)
+    response = auth_service.logout(
+        tokens.access_token, tokens.refresh_token)
+    return create_response(response, status_code=200)
 
 
-@auth_routes.route('/get-user', methods=['GET'])
-def get_user():
-    tokens = extract_tokens(auth_routes.current_request.headers)
-    try:
-        user = auth_service.get_user(tokens['auth_token'])
-        return create_response({
-            'detail': 'user verified',
-            'data': user
-        })
-    except Exception as e:
-        return create_response({'error': str(e)}, status_code=400)
+@auth_route.route('/get-user', methods=['GET'], cors=cors_config)
+@handle_exceptions
+def supabase_get_user():
+    request = auth_route.current_request
+    tokens = extract_tokens(request.headers)
+
+    response = auth_service.get_user(tokens.access_token)
+    return create_response({
+        'detail': 'User verified',
+        'data': UserMetadata(
+            user_id=response.id,
+            provider=response.app_metadata['provider'],
+            email=response.email
+        ).model_dump()
+    }, status_code=200)
 
 
-@auth_routes.route('/verify', methods=['GET'])
-def verify_user():
-    tokens = extract_tokens(auth_routes.current_request.headers)
-    try:
-        response = auth_service.verify_user(tokens)
-        return create_response(response)
-    except Exception as e:
-        return create_response({'error': str(e)}, status_code=400)
+@auth_route.route('/verify', methods=['GET'], cors=cors_config)
+@handle_exceptions
+def supabase_verify_user():
+    request = auth_route.current_request
+    tokens = extract_tokens(request.headers)
+
+    response = auth_service.verify_user(
+        tokens.access_token, tokens.refresh_token)
+    return create_response({
+        "access_token": response.session.access_token,
+        "refresh_token": response.session.refresh_token
+    }, status_code=200)
