@@ -3,6 +3,7 @@ from chalicelib.utils.token_utils import extract_tokens
 from chalicelib.models.payment_model import AddPaymentModel, CardReducePaymentWebHook
 from chalicelib.utils.response_helpers import create_response
 from chalicelib.decorators.handle_exceptions import handle_exceptions
+from chalicelib.config import cors_config
 
 from chalice import Blueprint
 
@@ -10,7 +11,7 @@ payment_routes = Blueprint(__name__)
 payment_service = PaymentService()
 
 
-@payment_routes.route('/payment', methods=['GET'])
+@payment_routes.route('/payment', methods=['GET'], cors=cors_config)
 @handle_exceptions
 def get_all_user_payments():
     request = payment_routes.current_request
@@ -19,7 +20,7 @@ def get_all_user_payments():
     return create_response(response, status_code=200)
 
 
-@payment_routes.route('/payment/filter', methods=['GET'])
+@payment_routes.route('/payment/filter', methods=['GET'], cors=cors_config)
 @handle_exceptions
 def filter_payments_by_date_range():
     request = payment_routes.current_request
@@ -33,7 +34,7 @@ def filter_payments_by_date_range():
     return create_response(response, status_code=200)
 
 
-@payment_routes.route('/payment', methods=['POST'])
+@payment_routes.route('/payment', methods=['POST'], cors=cors_config)
 @handle_exceptions
 def add_payment():
     request = payment_routes.current_request
@@ -53,7 +54,7 @@ def add_payment():
     return create_response(response, status_code=201)
 
 
-@payment_routes.route('/web-hook/card', methods=['POST'])
+@payment_routes.route('/web-hook/card', methods=['POST'], cors=cors_config)
 @handle_exceptions
 def reduce_card_amount():
     request = payment_routes.current_request

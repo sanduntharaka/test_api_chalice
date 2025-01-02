@@ -5,13 +5,13 @@ from chalicelib.decorators.handle_exceptions import handle_exceptions
 from chalicelib.utils.token_utils import extract_tokens
 from chalicelib.services.auth_service import AuthService
 from chalicelib.utils.response_helpers import create_response
-
+from chalicelib.config import cors_config
 # Define Blueprint for auth routes
 auth_route = Blueprint(__name__)
 auth_service = AuthService()
 
 
-@auth_route.route('/sign-up', methods=['POST'])
+@auth_route.route('/sign-up', methods=['POST'], cors=cors_config)
 @handle_exceptions
 def supabase_signup():
     request = auth_route.current_request
@@ -27,7 +27,7 @@ def supabase_signup():
     }, status_code=201)
 
 
-@auth_route.route('/login', methods=['POST'])
+@auth_route.route('/login', methods=['POST'], cors=cors_config)
 @handle_exceptions
 def supabase_login():
     request = auth_route.current_request
@@ -37,7 +37,7 @@ def supabase_login():
     return create_response(response, status_code=200)
 
 
-@auth_route.route('/logout', methods=['POST'])
+@auth_route.route('/logout', methods=['POST'], cors=cors_config)
 @handle_exceptions
 def supabase_logout():
     request = auth_route.current_request
@@ -47,7 +47,7 @@ def supabase_logout():
     return create_response(response, status_code=200)
 
 
-@auth_route.route('/get-user', methods=['GET'])
+@auth_route.route('/get-user', methods=['GET'], cors=cors_config)
 @handle_exceptions
 def supabase_get_user():
     request = auth_route.current_request
@@ -64,7 +64,7 @@ def supabase_get_user():
     }, status_code=200)
 
 
-@auth_route.route('/verify', methods=['GET'])
+@auth_route.route('/verify', methods=['GET'], cors=cors_config)
 @handle_exceptions
 def supabase_verify_user():
     request = auth_route.current_request

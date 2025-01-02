@@ -4,11 +4,13 @@ from chalicelib.models.profile_models import ProfileRequestData, ProfileUpdateRe
 from chalicelib.utils.token_utils import extract_tokens
 from chalicelib.utils.response_helpers import create_response
 from chalicelib.decorators.handle_exceptions import handle_exceptions
+from chalicelib.config import cors_config
+
 profile_routes = Blueprint(__name__)
 profile_service = ProfileService()
 
 
-@profile_routes.route('/profile', methods=['POST'])
+@profile_routes.route('/profile', methods=['POST'], cors=cors_config)
 @handle_exceptions
 def create_user_profile():
     request = profile_routes.current_request
@@ -23,7 +25,7 @@ def create_user_profile():
     }, status_code=201)
 
 
-@profile_routes.route('/profile/me', methods=['GET'])
+@profile_routes.route('/profile/me', methods=['GET'], cors=cors_config)
 @handle_exceptions
 def get_user_profile():
     request = profile_routes.current_request
@@ -36,7 +38,7 @@ def get_user_profile():
     }, status_code=200)
 
 
-@profile_routes.route('/profile/me', methods=['PUT'])
+@profile_routes.route('/profile/me', methods=['PUT'], cors=cors_config)
 @handle_exceptions
 def update_user_profile():
     request = profile_routes.current_request
