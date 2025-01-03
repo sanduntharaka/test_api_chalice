@@ -7,7 +7,7 @@
       "manage_iam_role": false,
       "iam_role_arn": "arn:aws:iam::908991722142:role/analisa-dev-manual",
       "api_gateway": {
-        "rest_api_id": "6a17prlw43"
+        "rest_api_id": "qsiub9o9z8"
       }
     }
   }
