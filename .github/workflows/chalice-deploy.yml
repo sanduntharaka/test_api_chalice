@@ -10,20 +10,22 @@ on:
 env:
   AWS_DEFAULT_REGION: eu-central-1
   PYTHON_VERSION: '3.9'
-  SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-  SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      # Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v3
 
+      # Set up Python environment
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
+      # Configure AWS credentials
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -31,52 +33,60 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_DEFAULT_REGION }}
 
+      # Install dependencies
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install chalice awscli python-dotenv supabase
           pip install -r requirements.txt
 
-      - name: Update Chalice config environment variables
+      # Update Chalice config with environment variables
+      - name: Update Chalice config
         run: |
           CONFIG_FILE=.chalice/config.json
-          
-          # Read existing config and update only environment variables
+
           python - <<EOF
           import json
           import os
-          
-          # Read existing config
+
+          # Load existing Chalice configuration
           with open('$CONFIG_FILE', 'r') as f:
               config = json.load(f)
-          
-          # Ensure the structure exists
+
+          # Update environment variables for the stage
+          stage = "dev"  # Replace with "prod" for production
           if 'stages' not in config:
               config['stages'] = {}
-          if 'prod' not in config['stages']:
-              config['stages']['prod'] = {}
-          if 'environment_variables' not in config['stages']['prod']:
-              config['stages']['prod']['environment_variables'] = {}
-          
-          # Update only environment variables
-          config['stages']['prod']['environment_variables'].update({
+          if stage not in config['stages']:
+              config['stages'][stage] = {}
+          if 'environment_variables' not in config['stages'][stage]:
+              config['stages'][stage]['environment_variables'] = {}
+
+          # Set environment variables
+          config['stages'][stage]['environment_variables'].update({
               'SUPABASE_URL': '${{ secrets.SUPABASE_URL }}',
               'SUPABASE_KEY': '${{ secrets.SUPABASE_KEY }}'
           })
-          
-          # Write back the updated config
+
+          # Save updated configuration
           with open('$CONFIG_FILE', 'w') as f:
               json.dump(config, f, indent=2)
           EOF
-          
-      - name: Deploy with Chalice
+
+      # Deploy Chalice application
+      - name: Deploy Chalice Application
         id: deploy
         run: |
-          # Deploy the application
-          chalice deploy --stage dev || exit 1
-          
-          # Extract the API Gateway URL from the deployment output
-          API_URL=$(cat .chalice/deployed/prod.json | jq -r '.resources[] | select(.resource_type=="rest_api") | .rest_api_url' || echo "API URL not found")
-          
-          # Set the URL as output variable
-          echo "api_url=${API_URL}" >> $GITHUB_OUTPUT
+          chalice deploy --stage dev
+
+          # Extract and log API Gateway URL
+          API_URL=$(cat .chalice/deployed/dev.json | jq -r '.resources[] | select(.resource_type=="rest_api") | .rest_api_url')
+          echo "Deployed API URL: $API_URL"
+          echo "api_url=$API_URL" >> $GITHUB_OUTPUT
+
+      # Save deployment artifacts
+      - name: Upload Deployment Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: chalice-deployment
+          path: .chalice/deployed/dev.json
