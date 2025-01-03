@@ -4,8 +4,8 @@
     {
       "name": "default-role",
       "resource_type": "iam_role",
-      "role_arn": "arn:aws:iam::908991722142:role/analisa-dev",
-      "role_name": "analisa-dev"
+      "role_arn": "arn:aws:iam::908991722142:role/analisa-dev-manual",
+      "role_name": "analisa-dev-manual"
     },
     {
       "name": "analisa-dev",
