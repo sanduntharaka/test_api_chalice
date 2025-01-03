@@ -73,7 +73,7 @@ jobs:
         id: deploy
         run: |
           # Deploy the application
-          chalice deploy --stage prod || exit 1
+          chalice deploy --stage dev || exit 1
           
           # Extract the API Gateway URL from the deployment output
           API_URL=$(cat .chalice/deployed/prod.json | jq -r '.resources[] | select(.resource_type=="rest_api") | .rest_api_url' || echo "API URL not found")
