@@ -3,8 +3,10 @@
   "app_name": "analisa",
   "stages": {
    "dev": {
-      "autogen_policy": true,
-      "api_gateway_stage": "dev"
+      "autogen_policy": false,
+      "manage_iam_role": false,
+      "iam_role_arn": "arn:aws:iam::908991722142:role/analisa-dev",
+      "api_gateway_stage": "api"
     }
   }
 }
