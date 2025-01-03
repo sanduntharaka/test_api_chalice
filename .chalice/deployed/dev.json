@@ -7,7 +7,7 @@
       "role_name": "analisa-dev"
     },
     {
-      "name": "api_handler",
+      "name": "analisa-dev",
       "resource_type": "lambda_function",
       "lambda_arn": "arn:aws:lambda:eu-central-1:908991722142:function:analisa-dev"
     },
