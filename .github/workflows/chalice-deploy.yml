@@ -77,7 +77,7 @@ jobs:
       - name: Deploy Chalice Application
         id: deploy
         run: |
-          chalice deploy || exit 1
+          chalice deploy --stage dev || exit 1
 
           # Extract and log API Gateway URL
           API_URL=$(cat .chalice/deployed/dev.json | jq -r '.resources[] | select(.resource_type=="rest_api") | .rest_api_url')
