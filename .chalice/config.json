@@ -5,7 +5,7 @@
    "dev": {
       "autogen_policy": false,
       "manage_iam_role": false,
-      "iam_role_arn": "arn:aws:iam::908991722142:role/analisa-dev",
+      "iam_role_arn": "arn:aws:iam::908991722142:role/analisa-dev-manual",
       "api_gateway_stage": "api"
     }
   }
